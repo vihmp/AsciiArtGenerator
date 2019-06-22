@@ -92,16 +92,15 @@ namespace AsciiArtGenerator
             {
                 using (StreamWriter writer = new StreamWriter(output))
                 {
-                    writer.WriteLine("<font face=\"courier\">");
+                    writer.WriteLine("<font face=\"courier\"><pre>");
                     for (int i = 0; i < asciiRepresentation.GetLength(0); i++)
                     {
                         for (int j = 0; j < asciiRepresentation.GetLength(1); j++)
                         {
                             writer.Write(asciiRepresentation[i, j]);
                         }
-                        writer.WriteLine("</br>");
                     }
-                    writer.Write("</font>");
+                    writer.Write("</pre></font>");
                 }
             }
 
