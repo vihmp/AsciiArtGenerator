@@ -99,6 +99,7 @@ namespace AsciiArtGenerator
                         {
                             writer.Write(asciiRepresentation[i, j]);
                         }
+                        writer.WriteLine();
                     }
                     writer.Write("</pre></font>");
                 }
