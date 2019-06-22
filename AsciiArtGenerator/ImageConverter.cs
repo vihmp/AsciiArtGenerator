@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace AsciiArtGenerator
 {
@@ -92,7 +93,7 @@ namespace AsciiArtGenerator
         {
             double[,] vApprox = MultiplyMatrix(w, h);
 
-            for (int j = 0; j < h.GetLength(0); j++)
+            Parallel.For(0, h.GetLength(0), j =>
             {
                 for (int k = 0; k < h.GetLength(1); k++)
                 {
@@ -107,7 +108,7 @@ namespace AsciiArtGenerator
 
                     h[j, k] = h[j, k] * numerator / denominator;
                 }
-            }
+            });
         }
 
         private static double[,] MultiplyMatrix(double[,] a, double[,] b)
