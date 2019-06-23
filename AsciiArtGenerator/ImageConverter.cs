@@ -72,7 +72,7 @@ namespace AsciiArtGenerator
                         for (int i = 0; i < glyphWidth; i++)
                         {
                             byte color = (x * glyphWidth + i < image.Width) && (y * glyphHeight + j < image.Height) ?
-                                image.GetPixel(x * glyphWidth + i, y * glyphHeight + j).R : (byte)255;
+                                (byte)(255 - image.GetPixel(x * glyphWidth + i, y * glyphHeight + j).R) : (byte)0;
                             bitmapVector[glyphWidth * j + i] = color;
                         }
                     }
