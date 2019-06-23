@@ -135,7 +135,6 @@ namespace AsciiArtGenerator
             int charNumHor, 
             double threshold)
         {
-            const int firstGlyphCode = 33;
             char[,] result = new char[charNumVert, charNumHor];
 
             for (int j = 0; j < h.GetLength(1); j++)
