@@ -81,7 +81,14 @@ namespace AsciiArtGenerator
 
                     for (int k = 0; k < bitmapVector.Length; k++)
                     {
-                        result[k, charNumHor * y + x] = bitmapVector[k] / l2norm;
+                        if (l2norm != 0.0)
+                        {
+                            result[k, charNumHor * y + x] = bitmapVector[k] / l2norm;
+                        }
+                        else
+                        {
+                            result[k, charNumHor * y + x] = bitmapVector[k];
+                        }
                     }
                 }
             }
@@ -102,11 +109,26 @@ namespace AsciiArtGenerator
 
                     for (int i = 0; i < w.GetLength(0); i++)
                     {
-                        numerator += w[i, j] * v[i, k] / Math.Pow(vApprox[i, k], 2 - beta);
+                        if (vApprox[i, k] != 0.0)
+                        {
+                            numerator += w[i, j] * v[i, k] / Math.Pow(vApprox[i, k], 2 - beta);
+                        }
+                        else
+                        {
+                            numerator += w[i, j] * v[i, k];
+                        }
+
                         denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1);
                     }
 
-                    h[j, k] = h[j, k] * numerator / denominator;
+                    if (denominator != 0.0)
+                    {
+                        h[j, k] = h[j, k] * numerator / denominator;
+                    }
+                    else
+                    {
+                        h[j, k] = h[j, k] * numerator;
+                    }
                 }
             });
         }
