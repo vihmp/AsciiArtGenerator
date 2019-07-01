@@ -1,12 +1,26 @@
 ﻿using System;
-using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Distributions;
 
 namespace AsciiArtGenerator
 {
     public partial class ImageConverter
     {
+        public static char[,] ConvertImage(Bitmap image, double threshold)
+        {
+            int charNumHor = (int)Math.Round((double)image.Width / glyphWidth);
+            int charNumVert = (int)Math.Round((double)image.Height / glyphHeight);
+
+            Matrix<double> v = SplitImage(image, charNumVert, charNumHor);
+            Matrix<double> h = wNorm.PseudoInverse().Multiply(v);
+
+            var result = GetAsciiRepresentation(h, charNumVert, charNumHor, threshold);
+
+            return result;
+        }
+
         public static char[,] ConvertImage(
             Bitmap image, 
             int beta,
@@ -17,20 +31,14 @@ namespace AsciiArtGenerator
             int charNumHor = (int)Math.Round((double)image.Width / glyphWidth);
             int charNumVert = (int)Math.Round((double)image.Height / glyphHeight);
             int totalCharactersNumber = charNumVert * charNumHor;
-            int glyphSetSize = wNorm.GetLength(1);
+            int glyphSetSize = wNorm.ColumnCount;
 
-            double[,] v = SplitImage(image, charNumVert, charNumHor);
+            Matrix<double> v = SplitImage(image, charNumVert, charNumHor);
 
-            double[,] h = new double[glyphSetSize, totalCharactersNumber];
-            Random rand = new Random();
-
-            for (int i = 0; i < glyphSetSize; i++)
-            {
-                for (int j = 0; j < totalCharactersNumber; j++)
-                {
-                    h[i, j] = rand.NextDouble();
-                }
-            }
+            Matrix<double> h = Matrix<double>.Build.Random(
+                glyphSetSize, 
+                totalCharactersNumber, 
+                new ContinuousUniform());
 
             int progress = 0;
             ushort step = (ushort)(iterationsCount / 10);
@@ -56,58 +64,44 @@ namespace AsciiArtGenerator
             return result;
         }
 
-        private static double[,] SplitImage(Bitmap image, int charNumVert, int charNumHor)
+        private static Matrix<double> SplitImage(Bitmap image, int charNumVert, int charNumHor)
         {
-            double[,] result =
-                new double[glyphHeight * glyphWidth, charNumHor * charNumVert];
+            Matrix<double> result = 
+                Matrix<double>.Build.Dense(glyphHeight * glyphWidth, charNumHor * charNumVert);
 
             for (int y = 0; y < charNumVert; y++)
             {
                 for (int x = 0; x < charNumHor; x++)
                 {
-                    double[] bitmapVector = new double[glyphHeight * glyphWidth];
-
                     for (int j = 0; j < glyphHeight; j++)
                     {
                         for (int i = 0; i < glyphWidth; i++)
                         {
                             byte color = (x * glyphWidth + i < image.Width) && (y * glyphHeight + j < image.Height) ?
                                 (byte)(255 - image.GetPixel(x * glyphWidth + i, y * glyphHeight + j).R) : (byte)0;
-                            bitmapVector[glyphWidth * j + i] = color;
-                        }
-                    }
-
-                    double l2norm = Math.Sqrt(bitmapVector.Select(value => value * value).Sum());
-
-                    for (int k = 0; k < bitmapVector.Length; k++)
-                    {
-                        if (l2norm != 0.0)
-                        {
-                            result[k, charNumHor * y + x] = bitmapVector[k] / l2norm;
-                        }
-                        else
-                        {
-                            result[k, charNumHor * y + x] = bitmapVector[k];
+                            result[glyphWidth * j + i, charNumHor * y + x] = color;
                         }
                     }
                 }
             }
 
+            result = result.NormalizeColumns(2.0);
+
             return result;
         }
 
-        private static void UpdateH(double[,] v, double[,] w, double[,] h, int beta)
+        private static void UpdateH(Matrix<double> v, Matrix<double> w, Matrix<double> h, int beta)
         {
-            double[,] vApprox = MultiplyMatrix(w, h);
+            Matrix<double> vApprox = w.Multiply(h);
 
-            Parallel.For(0, h.GetLength(0), j =>
+            Parallel.For(0, h.RowCount, j =>
             {
-                for (int k = 0; k < h.GetLength(1); k++)
+                for (int k = 0; k < h.ColumnCount; k++)
                 {
                     double numerator = 0.0;
                     double denominator = 0.0;
 
-                    for (int i = 0; i < w.GetLength(0); i++)
+                    for (int i = 0; i < w.RowCount; i++)
                     {
                         if (vApprox[i, k] != 0.0)
                         {
@@ -133,38 +127,20 @@ namespace AsciiArtGenerator
             });
         }
 
-        private static double[,] MultiplyMatrix(double[,] a, double[,] b)
-        {
-            double[,] c = new double[a.GetLength(0), b.GetLength(1)];
-
-            for (int i = 0; i < c.GetLength(0); i++)
-            {
-                for (int j = 0; j < c.GetLength(1); j++)
-                {
-                    for (int k = 0; k < a.GetLength(1); k++)
-                    {
-                        c[i, j] += a[i, k] * b[k, j];
-                    }
-                }
-            }
-
-            return c;
-        }
-
         private static char[,] GetAsciiRepresentation(
-            double[,] h, 
+            Matrix<double> h, 
             int charNumVert, 
             int charNumHor, 
             double threshold)
         {
             char[,] result = new char[charNumVert, charNumHor];
 
-            for (int j = 0; j < h.GetLength(1); j++)
+            for (int j = 0; j < h.ColumnCount; j++)
             {
                 double max = 0.0;
                 int maxIndex = 0;
 
-                for (int i = 0; i < h.GetLength(0); i++)
+                for (int i = 0; i < h.RowCount; i++)
                 {
                     if (max < h[i, j])
                     {

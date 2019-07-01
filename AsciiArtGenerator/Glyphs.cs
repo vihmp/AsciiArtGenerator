@@ -1,4 +1,6 @@
-﻿namespace AsciiArtGenerator
+﻿using MathNet.Numerics.LinearAlgebra;
+
+namespace AsciiArtGenerator
 {
     public partial class ImageConverter
     {
@@ -6,7 +8,8 @@
         private const int glyphHeight = 23;
         private const int firstGlyphCode = 32;
 
-        private static double[,] wNorm = new double[,]
+        private static Matrix<double> wNorm = 
+            CreateMatrix.DenseOfArray<double>(new double [,]
         {
             {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3044,6 +3047,6 @@
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0
             }
-        };
+        });
     }
 }
