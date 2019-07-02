@@ -24,24 +24,24 @@ namespace AsciiArtGenerator
             if(args[0] == "/?")
             {
                 Console.WriteLine();
-                Console.WriteLine("Usage: AsciiArtGenerator <input_image> [-p] [-b <beta>] [-t <threshold>] ");
-                Console.WriteLine("       [-i <iterations_count>] [-o <output_file>]");
+                Console.WriteLine("Usage: AsciiArtGenerator <input_image> [/P] [/B <beta>] [/T <threshold>] ");
+                Console.WriteLine("       [/I <iterations_count>] [/O <output_file>]");
                 Console.WriteLine();
                 Console.WriteLine("Options:");
-                Console.WriteLine(string.Format("   {0,-25}{1}", "-p", "Use this option to convert the image using the"));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/P", "Use this option to convert the image using the"));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "pseudoinverse."));
-                Console.WriteLine(string.Format("   {0,-25}{1}", "-b <beta>", "Sets 'beta' parameter, that enables the selection"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "of many cost functions (ignored if -p is set)."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/B <beta>", "Sets 'beta' parameter, that enables the selection"));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "of many cost functions (ignored if /P is set)."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Possible values:"));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "0 - Itakura-Saito Divergence"));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "1 - Kullback-Leibler Divergence"));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "2 - Squared Euclidean Distance"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", "-t <threshold>", "Sets threshold for maximum activation values."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/T <threshold>", "Sets threshold for maximum activation values."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Possible values are from 0.0 to 1.0."));
-                Console.WriteLine(string.Format("   {0,-25}{1}", "-i <iterations_count>", "Sets number of iterations of an algorithm."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/I <iterations_count>", "Sets number of iterations of an algorithm."));
                 Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if -p is set)."));
-                Console.WriteLine(string.Format("   {0,-25}{1}", "-o <output_file>", "Sets name of output HTML file."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set)."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/O <output_file>", "Sets name of output HTML file."));
                 return;
             }
 
@@ -56,35 +56,38 @@ namespace AsciiArtGenerator
             {
                 switch(args[i])
                 {
-                    case "-p":
+                    case "/P":
+                    case "/p":
                         mode = Modes.Pseudoinverse;
                         break;
-                    case "-b":
-                        if((i + 2) > args.Length)
+                    case "/B":
+                    case "/b":
+                        if ((i + 2) > args.Length)
                         {
-                            Console.WriteLine("Parameter -b is undefined");
+                            Console.WriteLine("Parameter /B value is undefined");
                             return;
                         }
 
                         if (!int.TryParse(args[i + 1], out beta))
                         {
                             Console.WriteLine(
-                                "Parameter -b has invalid value, possible values are 0, 1 or 2");
+                                "Parameter /B has invalid value, possible values are 0, 1 or 2");
                             return;
                         }
 
                         if ((beta != 0) && (beta != 1) && (beta != 2))
                         {
                             Console.WriteLine(
-                                "Parameter -b has invalid value, possible values are 0, 1 or 2");
+                                "Parameter /B has invalid value, possible values are 0, 1 or 2");
                             return;
                         }
                         i++;
                         break;
-                    case "-t":
+                    case "/T":
+                    case "/t":
                         if ((i + 2) > args.Length)
                         {
-                            Console.WriteLine("Parameter -t is undefined");
+                            Console.WriteLine("Parameter /T value is undefined");
                             return;
                         }
 
@@ -95,29 +98,30 @@ namespace AsciiArtGenerator
                             out threshold))
                         {
                             Console.WriteLine(
-                                "Parameter -t has invalid value, possible values are from 0.0 to 1.0");
+                                "Parameter /T has invalid value, possible values are from 0.0 to 1.0");
                             return;
                         }
 
                         if ((threshold < 0.0) || (threshold > 1.0))
                         {
                             Console.WriteLine(
-                                "Parameter -t has invalid value, possible values are from 0.0 to 1.0");
+                                "Parameter /T has invalid value, possible values are from 0.0 to 1.0");
                             return;
                         }
                         i++;
                         break;
-                    case "-i":
+                    case "/I":
+                    case "/i":
                         if ((i + 2) > args.Length)
                         {
-                            Console.WriteLine("Parameter -i is undefined");
+                            Console.WriteLine("Parameter /I value is undefined");
                             return;
                         }
 
                         if (!ushort.TryParse(args[i + 1], out iterationsCount))
                         {
                             Console.WriteLine(string.Format(
-                                "Parameter -i has invalid value, possible values are from 1 to {0}",
+                                "Parameter /I has invalid value, possible values are from 1 to {0}",
                                 ushort.MaxValue));
                             return;
                         }
@@ -125,16 +129,17 @@ namespace AsciiArtGenerator
                         if (iterationsCount < 1)
                         {
                             Console.WriteLine(string.Format(
-                                "Parameter -i has invalid value, possible values are from 1 to {0}",
+                                "Parameter /I has invalid value, possible values are from 1 to {0}",
                                 ushort.MaxValue));
                             return;
                         }
                         i++;
                         break;
-                    case "-o":
+                    case "/O":
+                    case "/o":
                         if ((i + 2) > args.Length)
                         {
-                            Console.WriteLine("Parameter -o is undefined");
+                            Console.WriteLine("Parameter /O value is undefined");
                             return;
                         }
 
