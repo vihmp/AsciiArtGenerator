@@ -23,7 +23,7 @@ namespace AsciiArtGenerator
 
         public static char[,] ConvertImage(
             Bitmap image, 
-            int beta,
+            double beta,
             double threshold,
             ushort iterationsCount,
             Action<int> ProgressUpdated)
@@ -90,7 +90,7 @@ namespace AsciiArtGenerator
             return result;
         }
 
-        private static void UpdateH(Matrix<double> v, Matrix<double> w, Matrix<double> h, int beta)
+        private static void UpdateH(Matrix<double> v, Matrix<double> w, Matrix<double> h, double beta)
         {
             Matrix<double> vApprox = w.Multiply(h);
 
@@ -105,14 +105,14 @@ namespace AsciiArtGenerator
                     {
                         if (vApprox[i, k] != 0.0)
                         {
-                            numerator += w[i, j] * v[i, k] / Math.Pow(vApprox[i, k], 2 - beta);
+                            numerator += w[i, j] * v[i, k] / Math.Pow(vApprox[i, k], 2.0 - beta);
                         }
                         else
                         {
                             numerator += w[i, j] * v[i, k];
                         }
 
-                        denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1);
+                        denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1.0);
                     }
 
                     if (denominator != 0.0)

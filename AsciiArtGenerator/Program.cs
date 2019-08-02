@@ -5,12 +5,6 @@ using System.Globalization;
 
 namespace AsciiArtGenerator
 {
-    enum Modes
-    {
-        Pseudoinverse,
-        BetaDivergence
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -30,126 +24,37 @@ namespace AsciiArtGenerator
                 Console.WriteLine("Options:");
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/P", "Use this option to convert the image using the"));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "pseudoinverse."));
-                Console.WriteLine(string.Format("   {0,-25}{1}", "/B <beta>", "Sets 'beta' parameter, that enables the selection"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "of many cost functions (ignored if /P is set)."));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Possible values:"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "0 - Itakura-Saito Divergence"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "1 - Kullback-Leibler Divergence"));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "2 - Squared Euclidean Distance"));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/B <beta>", "Sets 'beta' parameter, that affects cost function"));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 2.0."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/T <threshold>", "Sets threshold for maximum activation values."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Possible values are from 0.0 to 1.0."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Default value is 0.0."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/I <iterations_count>", "Sets number of iterations of an algorithm."));
                 Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set)."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 100."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/O <output_file>", "Sets name of output HTML file."));
                 return;
             }
 
             string inputFile = args[0];
-            Modes mode = Modes.BetaDivergence;
-            int beta = 1;
+            bool pseudoInverseMode = false;
+            double beta = 2.0;
             double threshold = 0.0;
             ushort iterationsCount = 100;
             string outputFile = "output.html";
 
-            for(int i = 1; i < args.Length; i++)
+            string errorMsg = ParseArgs(
+                args, 
+                ref pseudoInverseMode, 
+                ref beta, 
+                ref threshold, 
+                ref iterationsCount, 
+                ref outputFile);
+
+            if(!string.IsNullOrEmpty(errorMsg))
             {
-                switch(args[i])
-                {
-                    case "/P":
-                    case "/p":
-                        mode = Modes.Pseudoinverse;
-                        break;
-                    case "/B":
-                    case "/b":
-                        if ((i + 2) > args.Length)
-                        {
-                            Console.WriteLine("Parameter /B value is undefined");
-                            return;
-                        }
-
-                        if (!int.TryParse(args[i + 1], out beta))
-                        {
-                            Console.WriteLine(
-                                "Parameter /B has invalid value, possible values are 0, 1 or 2");
-                            return;
-                        }
-
-                        if ((beta != 0) && (beta != 1) && (beta != 2))
-                        {
-                            Console.WriteLine(
-                                "Parameter /B has invalid value, possible values are 0, 1 or 2");
-                            return;
-                        }
-                        i++;
-                        break;
-                    case "/T":
-                    case "/t":
-                        if ((i + 2) > args.Length)
-                        {
-                            Console.WriteLine("Parameter /T value is undefined");
-                            return;
-                        }
-
-                        if (!double.TryParse(
-                            args[i + 1], 
-                            NumberStyles.Float, 
-                            CultureInfo.InvariantCulture, 
-                            out threshold))
-                        {
-                            Console.WriteLine(
-                                "Parameter /T has invalid value, possible values are from 0.0 to 1.0");
-                            return;
-                        }
-
-                        if ((threshold < 0.0) || (threshold > 1.0))
-                        {
-                            Console.WriteLine(
-                                "Parameter /T has invalid value, possible values are from 0.0 to 1.0");
-                            return;
-                        }
-                        i++;
-                        break;
-                    case "/I":
-                    case "/i":
-                        if ((i + 2) > args.Length)
-                        {
-                            Console.WriteLine("Parameter /I value is undefined");
-                            return;
-                        }
-
-                        if (!ushort.TryParse(args[i + 1], out iterationsCount))
-                        {
-                            Console.WriteLine(string.Format(
-                                "Parameter /I has invalid value, possible values are from 1 to {0}",
-                                ushort.MaxValue));
-                            return;
-                        }
-
-                        if (iterationsCount < 1)
-                        {
-                            Console.WriteLine(string.Format(
-                                "Parameter /I has invalid value, possible values are from 1 to {0}",
-                                ushort.MaxValue));
-                            return;
-                        }
-                        i++;
-                        break;
-                    case "/O":
-                    case "/o":
-                        if ((i + 2) > args.Length)
-                        {
-                            Console.WriteLine("Parameter /O value is undefined");
-                            return;
-                        }
-
-                        outputFile = string.Format("{0}.html", args[i + 1]);
-                        i++;
-                        break;
-                    default:
-                        Console.WriteLine(string.Format("Invalid parameter {0}", args[i]));
-                        return;
-                }
+                Console.WriteLine(errorMsg);
+                return;
             }
 
             Bitmap image;
@@ -169,7 +74,7 @@ namespace AsciiArtGenerator
 
             try
             {
-                if (mode == Modes.BetaDivergence)
+                if (!pseudoInverseMode)
                 {
                     asciiRepresentation = ImageConverter.ConvertImage(
                         image,
@@ -209,6 +114,98 @@ namespace AsciiArtGenerator
             }
 
             Console.WriteLine("Done!");
+        }
+
+        static string ParseArgs(
+            string[] args, 
+            ref bool pseudoInverseMode,
+            ref double beta,
+            ref double threshold,
+            ref ushort iterationsCount,
+            ref string outputFile)
+        {
+            for (int i = 1; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "/P":
+                    case "/p":
+                        pseudoInverseMode = true;
+                        break;
+                    case "/B":
+                    case "/b":
+                        if ((i + 2) > args.Length)
+                        {
+                            return "Parameter /B value is undefined";
+                        }
+
+                        if (!double.TryParse(args[i + 1], out beta))
+                        {
+                            return "Parameter /B has invalid value";
+                        }
+
+                        i++;
+                        break;
+                    case "/T":
+                    case "/t":
+                        if ((i + 2) > args.Length)
+                        {
+                            return "Parameter /T value is undefined";
+                        }
+
+                        if (!double.TryParse(
+                            args[i + 1],
+                            NumberStyles.Float,
+                            CultureInfo.InvariantCulture,
+                            out threshold))
+                        {
+                            return "Parameter /T has invalid value, possible values are from 0.0 to 1.0";
+                        }
+
+                        if ((threshold < 0.0) || (threshold > 1.0))
+                        {
+                            return "Parameter /T has invalid value, possible values are from 0.0 to 1.0";
+                        }
+                        i++;
+                        break;
+                    case "/I":
+                    case "/i":
+                        if ((i + 2) > args.Length)
+                        {
+                            return "Parameter /I value is undefined";
+                        }
+
+                        if (!ushort.TryParse(args[i + 1], out iterationsCount))
+                        {
+                            return string.Format(
+                                "Parameter /I has invalid value, possible values are from 1 to {0}",
+                                ushort.MaxValue);
+                        }
+
+                        if (iterationsCount < 1)
+                        {
+                            return string.Format(
+                                "Parameter /I has invalid value, possible values are from 1 to {0}",
+                                ushort.MaxValue);
+        }
+                        i++;
+                        break;
+                    case "/O":
+                    case "/o":
+                        if ((i + 2) > args.Length)
+                        {
+                            return "Parameter /O value is undefined";
+                        }
+
+                        outputFile = string.Format("{0}.html", args[i + 1]);
+                        i++;
+                        break;
+                    default:
+                        return string.Format("Invalid parameter {0}", args[i]);
+                }
+            }
+
+            return string.Empty;
         }
     }
 }
