@@ -31,6 +31,7 @@ namespace AsciiArtGenerator
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Default value is 0.0."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/I <iterations_count>", "Sets number of iterations of an algorithm."));
                 Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 100."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/N <threads_number>", "Sets maximum threads number."));
                 Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 1."));
