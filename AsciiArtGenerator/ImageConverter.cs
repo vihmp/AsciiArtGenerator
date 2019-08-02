@@ -26,6 +26,7 @@ namespace AsciiArtGenerator
             double beta,
             double threshold,
             ushort iterationsCount,
+            ushort threadsNumber,
             Action<int> ProgressUpdated)
         {
             int charNumHor = (int)Math.Round((double)image.Width / glyphWidth);
@@ -45,7 +46,7 @@ namespace AsciiArtGenerator
 
             for (ushort i = 0; i < iterationsCount; i++)
             {
-                UpdateH(v, wNorm, h, beta);
+                UpdateH(v, wNorm, h, beta, threadsNumber);
 
                 if((i + 1) % step == 0)
                 {
@@ -90,11 +91,16 @@ namespace AsciiArtGenerator
             return result;
         }
 
-        private static void UpdateH(Matrix<double> v, Matrix<double> w, Matrix<double> h, double beta)
+        private static void UpdateH(
+            Matrix<double> v, 
+            Matrix<double> w, 
+            Matrix<double> h, 
+            double beta,
+            ushort threadsNumber)
         {
             Matrix<double> vApprox = w.Multiply(h);
 
-            Parallel.For(0, h.RowCount, j =>
+            Parallel.For(0, h.RowCount, new ParallelOptions() { MaxDegreeOfParallelism = threadsNumber }, j =>
             {
                 for (int k = 0; k < h.ColumnCount; k++)
                 {

@@ -31,7 +31,9 @@ namespace AsciiArtGenerator
                 Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "Default value is 0.0."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/I <iterations_count>", "Sets number of iterations of an algorithm."));
                 Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
-                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 100."));
+                Console.WriteLine(string.Format("   {0,-25}{1}", "/N <threads_number>", "Sets maximum threads number."));
+                Console.WriteLine(string.Format("   {0,-25}{1} {2}", string.Empty, "Possible values are from 1 to", ushort.MaxValue));
+                Console.WriteLine(string.Format("   {0,-25}{1}", string.Empty, "(ignored if /P is set). Default value is 1."));
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/O <output_file>", "Sets name of output HTML file."));
                 return;
             }
@@ -41,6 +43,7 @@ namespace AsciiArtGenerator
             double beta = 2.0;
             double threshold = 0.0;
             ushort iterationsCount = 100;
+            ushort threadsNumber = 1;
             string outputFile = "output.html";
 
             string errorMsg = ParseArgs(
@@ -48,7 +51,8 @@ namespace AsciiArtGenerator
                 ref pseudoInverseMode, 
                 ref beta, 
                 ref threshold, 
-                ref iterationsCount, 
+                ref iterationsCount,
+                ref threadsNumber,
                 ref outputFile);
 
             if(!string.IsNullOrEmpty(errorMsg))
@@ -81,6 +85,7 @@ namespace AsciiArtGenerator
                         beta,
                         threshold,
                         iterationsCount,
+                        threadsNumber,
                         progress => Console.WriteLine(string.Format("{0}%", progress)));
                 }
                 else
@@ -122,6 +127,7 @@ namespace AsciiArtGenerator
             ref double beta,
             ref double threshold,
             ref ushort iterationsCount,
+            ref ushort threadsNumber,
             ref string outputFile)
         {
             for (int i = 1; i < args.Length; i++)
@@ -188,6 +194,28 @@ namespace AsciiArtGenerator
                                 "Parameter /I has invalid value, possible values are from 1 to {0}",
                                 ushort.MaxValue);
         }
+                        i++;
+                        break;
+                    case "/N":
+                    case "/n":
+                        if ((i + 2) > args.Length)
+                        {
+                            return "Parameter /N value is undefined";
+                        }
+
+                        if (!ushort.TryParse(args[i + 1], out threadsNumber))
+                        {
+                            return string.Format(
+                                "Parameter /N has invalid value, possible values are from 1 to {0}",
+                                ushort.MaxValue);
+                        }
+
+                        if (iterationsCount < 1)
+                        {
+                            return string.Format(
+                                "Parameter /N has invalid value, possible values are from 1 to {0}",
+                                ushort.MaxValue);
+                        }
                         i++;
                         break;
                     case "/O":
