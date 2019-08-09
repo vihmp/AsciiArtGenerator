@@ -146,7 +146,11 @@ namespace AsciiArtGenerator
                             return "Parameter /B value is undefined";
                         }
 
-                        if (!double.TryParse(args[i + 1], out beta))
+                        if (!double.TryParse(
+                            args[i + 1],
+                            NumberStyles.Float,
+                            CultureInfo.InvariantCulture,
+                            out beta))
                         {
                             return "Parameter /B has invalid value";
                         }
