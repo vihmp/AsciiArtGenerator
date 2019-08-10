@@ -98,6 +98,7 @@ namespace AsciiArtGenerator
             double beta,
             ushort threadsNumber)
         {
+            const double epsilon = 1e-6;
             Matrix<double> vApprox = w.Multiply(h);
 
             Parallel.For(0, h.RowCount, new ParallelOptions() { MaxDegreeOfParallelism = threadsNumber }, j =>
@@ -109,19 +110,27 @@ namespace AsciiArtGenerator
 
                     for (int i = 0; i < w.RowCount; i++)
                     {
-                        if (vApprox[i, k] != 0.0)
+                        if (Math.Abs(vApprox[i, k]) > epsilon)
                         {
                             numerator += w[i, j] * v[i, k] / Math.Pow(vApprox[i, k], 2.0 - beta);
+                            denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1.0);
                         }
                         else
                         {
                             numerator += w[i, j] * v[i, k];
-                        }
 
-                        denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1.0);
+                            if (beta - 1.0 > 0.0)
+                            {
+                                denominator += w[i, j] * Math.Pow(vApprox[i, k], beta - 1.0);
+                            }
+                            else
+                            {
+                                denominator += w[i, j];
+                            }
+                        }
                     }
 
-                    if (denominator != 0.0)
+                    if (Math.Abs(denominator) > epsilon)
                     {
                         h[j, k] = h[j, k] * numerator / denominator;
                     }
