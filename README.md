@@ -1,7 +1,7 @@
 Converts specified white and black image to ASCII-art.
 <pre>
 Usage: AsciiArtGenerator &lt;input_image&gt; [/P] [/B &lt;beta&gt;] [/T &lt;threshold&gt;] 
-       [/I &lt;iterations_count&gt;] [/O &lt;output_file&gt;]
+       [/I &lt;iterations_count&gt;] [/N &lt;threads_number&gt;] [/O &lt;output_file&gt;]
 
 Options:
    /P                       Use this option to convert the image using the
