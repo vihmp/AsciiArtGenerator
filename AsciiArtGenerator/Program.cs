@@ -19,7 +19,7 @@ namespace AsciiArtGenerator
             {
                 Console.WriteLine();
                 Console.WriteLine("Usage: AsciiArtGenerator <input_image> [/P] [/B <beta>] [/T <threshold>] ");
-                Console.WriteLine("       [/I <iterations_count>] [/O <output_file>]");
+                Console.WriteLine("       [/I <iterations_count>] [/N <threads_number>] [/O <output_file>]");
                 Console.WriteLine();
                 Console.WriteLine("Options:");
                 Console.WriteLine(string.Format("   {0,-25}{1}", "/P", "Use this option to convert the image using the"));
